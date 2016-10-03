@@ -4,11 +4,23 @@
 
 import numpy as np
 import cv2 as cv 
+import tkinter as tk 
+
+
 
 cv.namedWindow("preview")
 vidCamera = cv.VideoCapture(0)
 path = "C:/Users/Ryan Cruz/Documents/CSIS/CST205/Pro1Images/"
 count = 1;
+tkRoot = Tk()
+root.title = 'LiveStream'
+
+mainFrame = tk.Frame(root, )
+
+def app():
+	tkRoot = Tk()
+	root.title = 'LiveStream'
+	mainFrame = tk.Frame(root, )
 
 if vidCamera.isOpened():
 	rval, frame = vidCamera.read()
@@ -29,3 +41,5 @@ while(rval):
 		break
 cv.destroyWindow("preview")
 #cv.imshow("lastimage",lastimage)	
+
+
