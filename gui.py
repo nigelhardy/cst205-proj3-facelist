@@ -1,14 +1,37 @@
-import cv2
-import numpy
-from matplotlib import pyplot as plt
-import PIL.Image as im
-import PIL.ImageTk as imTk
-import threading
-from Tkinter import *
-import emotionRecognition
-import facelistAudio as flAudio
-import soundcloud
-import thread
+"""
+    Author: Nigel Hardy
+    Abstract: This is a class that builds and incorporates the other modules within this project.
+    GitHub:  https://github.com/nigelhardy/cst205-proj2-facelist
+"""
+
+
+import platform 
+system = platform.system()
+
+if system == 'Windows':
+    import cv2
+    import numpy
+    from matplotlib import pyplot as plt
+    import PIL.Image as im
+    import PIL.ImageTk as imTk
+    import threading
+    from tkinter import *
+    import emotionRecognition
+    import facelistAudio as flAudio
+    import soundcloud
+    import _thread as thread
+else: 
+    import cv2
+    import numpy
+    from matplotlib import pyplot as plt
+    import PIL.Image as im
+    import PIL.ImageTk as imTk
+    import threading
+    from Tkinter import *
+    import emotionRecognition
+    import facelistAudio as flAudio
+    import soundcloud
+    import _thread as thread
 
 
 global songNames
@@ -31,7 +54,7 @@ class Application(Frame):
             if audio.retSizeArr() > 0:
                 audio.playSongs()
         except:
-            print "Couldn't play song"
+            print ("Couldn't play song")
 
     def switchBool(self):
         self.updateB = not self.updateB

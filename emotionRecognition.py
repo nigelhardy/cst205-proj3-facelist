@@ -1,15 +1,30 @@
-import numpy as np
-from PIL import Image as im
-from PIL import ImageEnhance as imEn
-import indicoio as ind
-import operator
+"""EmotionREcognition.py
+	Author: Ryan Cruz
+	Abstract: Module to edit image, localize face, and return string value for emotion
+	detected on face. 
+"""
+import platform 
+system = platform.system()
+
+if system == 'Windows':
+	import numpy as np
+	from PIL import Image as im
+	from PIL import ImageEnhance as imEn
+	import indicoio as ind
+	import operator
+else:
+	import numpy as np
+	from PIL import Image as im
+	from PIL import ImageEnhance as imEn
+	import indicoio as ind
+	import operator
 
 ind.config.api_key = "18f4dba9b853159e163402e9ddba8abc"
 
-
+#function takes image as a parameter and returns a cropped image array
 def faceLocalization(img):
-	enIm = imEn.Brightness(img)
-	enhanced = enIm.enhance(1.5)
+	enIm = imEn.Brightness(img) #creates image enhancer object
+	enhanced = enIm.enhance(1.5) #enhances image brightness
 	im_array = np.array(enhanced)
 	crop_loc = ind.facial_localization(im_array)
 	topX = crop_loc[0]['top_left_corner'][0]
