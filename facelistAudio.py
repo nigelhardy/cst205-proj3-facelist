@@ -1,5 +1,5 @@
 #Author:  Brandon Avery
-#Created:  10/12/2016
+#Created:  10/14/2016
 #CSUMB CST-205 Project 2
 #Team 24
 #GitHub:  https://github.com/nigelhardy/cst205-proj2-facelist
@@ -50,7 +50,6 @@ class facelistAudio:
             browser = webbrowser.open(self.url_loc[i])
             # wait until the track is finished before opening the next track
             #time.sleep(self.track_dur[i])
-            #time.sleep(1000)
 
     #return the array of track titles
     def getTrackTitle(self):

@@ -2,7 +2,11 @@ Facelist
 
 What is Facelist? 
 Facelist is essentially a playlist creating photo-booth. 
-	
+
+Dependencies: OpenCV, Pillow, Tkinter, Numpy, Soundcloud, Indico
+
+Run facelist.py
+
 How does it work?
 	Facelist works by analyzing the photographs you take using the built in webcam reader. 
 	You start by opening the application.
@@ -49,6 +53,5 @@ Future Work
 	4. Player Controls
 	5. Allow users to pause/play songs
 	6. Allow users to control track selection
-	7. Links to artist SoundCloud profile	
-
+	7. Links to artist SoundCloud profile
 	
