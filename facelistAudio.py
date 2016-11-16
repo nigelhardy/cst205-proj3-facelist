@@ -45,12 +45,12 @@ class facelistAudio:
 
     #play the songs in the list
     def playSongs(self):
-        for i in range(0,len(self.url_loc)):
+        #for i in range(0,len(self.url_loc)):
             # open the tracks stream URL in a webbrowser
-            browser = webbrowser.open(self.url_loc[i])
+            #browser = webbrowser.open(self.url_loc[i])
             # wait until the track is finished before opening the next track
             #time.sleep(self.track_dur[i])
-
+        return self.url_loc[len(self.url_loc)-1]
     #return the array of track titles
     def getTrackTitle(self):
         titles = self.track_title[len(self.track_title)-1]
