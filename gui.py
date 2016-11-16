@@ -16,6 +16,7 @@ else:
 import emotionRecognition
 import facelistAudio as flAudio
 import soundcloud
+import time
 
 global songNames # array of strings to fill Tkinter labels
 songNames = []
@@ -43,7 +44,7 @@ class Application(Frame): # class for gui
             if audio.retSizeArr() > 0:
                 audio.playSongs()
         except:
-            print "Couldn't play song"
+            print ("Couldn't play song")
 
     def switchBool(self): # turns on and off the webcam feed
         self.updateB = not self.updateB
@@ -123,10 +124,10 @@ class Application(Frame): # class for gui
 
     def take_photo(self):
         if(self.webcam.isOpened()):
+            timestamp = time.strftime("%a_%d%b%Y_%H.%M.%S")
             if self.updateB is True:
                 _, frame = self.webcam.read()
-                success = cv2.imwrite("cap%d.jpg"% self.count,frame) #saves photo
-                self.count += 1
+                success = cv2.imwrite("captures/cap_%s.jpg"%timestamp,frame) #saves photo
                 frame = cv2.flip(frame, 1)
                 cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA) # converts colors/image
                 self.img = im.fromarray(cv2image)
@@ -146,7 +147,7 @@ class Application(Frame): # class for gui
 
     def __init__(self, master=None): # inializes gui and defines variables for class
         Frame.__init__(self, master)
-        self.frame = Frame(master)
+        # self.frame = Frame(master)
         self.songLabels = [] # list for names of songs
         self.actButton = Button() # activate webcam button
         self.webcamLbl = Label() # webcam image widget label
