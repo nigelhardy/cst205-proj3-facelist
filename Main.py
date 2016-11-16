@@ -95,6 +95,7 @@ class Player(Tk.Frame):
         self.webcam = cv2.VideoCapture(0)
         self.img = self.webcam
         self.updateB = True # bool to start and stop webcam update
+        self.lastURL = "EMPTY"
         #self.pack() # prepare gui
         self.speed = 10 # milliseconds between UI refresh
         self.counter = 0
@@ -111,14 +112,31 @@ class Player(Tk.Frame):
 
         # Menu Bar
         #   File Menu
-        menubar = Tk.Menu(self.parent)
+        '''menubar = Tk.Menu(self.parent)
         self.parent.config(menu=menubar)
 
         fileMenu = Tk.Menu(menubar)
         fileMenu.add_command(label="Open", underline=0, command=self.OnOpen)
         fileMenu.add_command(label="Exit", underline=1, command=_quit)
         menubar.add_cascade(label="File", menu=fileMenu)
+'''
+        self.topPanel = ttk.Frame(self.parent)
+        self.labelLeft = ttk.Label(self.topPanel, text="Label1")
+        self.labelMiddle = ttk.Label(self.topPanel, text="Label2")
+        self.labelRight = ttk.Label(self.topPanel, text="labelRight")
+        webCamButton = ttk.Button(self.topPanel, text="Webcam", command=self.activateWebcam)
+        shutter = ttk.Button(self.topPanel, text="Take Photo", command=self.takethephoto)
+        playSongButton = ttk.Button(self.topPanel, text="Find Song", command=self.playSongSC)
 
+        self.labelLeft.pack(side=Tk.LEFT)
+        self.labelMiddle.pack(side=Tk.LEFT)
+        self.labelRight.pack(side=Tk.LEFT)
+        playSongButton.pack(side=Tk.RIGHT)
+        shutter.pack(side=Tk.RIGHT)
+        webCamButton.pack(side=Tk.RIGHT)
+        
+        
+        self.topPanel.pack(fill=Tk.BOTH, expand=1)
         # The second panel holds controls
         self.player = None
         self.videopanel = ttk.Frame(self.parent)
@@ -138,11 +156,8 @@ class Player(Tk.Frame):
         play   = ttk.Button(ctrlpanel, text="Play", command=self.OnPlay)
         stop   = ttk.Button(ctrlpanel, text="Stop", command=self.OnStop)
         volume = ttk.Button(ctrlpanel, text="Volume", command=self.OnSetVolume)
-        stream = ttk.Button(ctrlpanel, text="Webcam", command=self.activateWebcam)
-        shutter = ttk.Button(ctrlpanel, text="Take Photo", command=self.takethephoto)
-        playSongButton = ttk.Button(ctrlpanel, text="Find Song", command=self.playSongSC)
+        
 
-        self.emotion = ttk.Label(ctrlpanel, text="Emotion")
         pause.pack(side=Tk.LEFT)
         play.pack(side=Tk.LEFT)
         stop.pack(side=Tk.LEFT)
@@ -153,10 +168,7 @@ class Player(Tk.Frame):
         self.volslider = Tk.Scale(ctrlpanel, variable=self.volume_var, command=self.volume_sel,
                 from_=0, to=100, orient=Tk.HORIZONTAL, length=100)
         self.volslider.pack(side=Tk.LEFT)
-        stream.pack(side=Tk.LEFT)
-        shutter.pack(side=Tk.LEFT)
-        self.emotion.pack(side=Tk.LEFT)
-        playSongButton.pack(side=Tk.LEFT)
+        
         ctrlpanel.pack(side=Tk.BOTTOM)
 
         ctrlpanel2 = ttk.Frame(self.parent)
@@ -207,18 +219,18 @@ class Player(Tk.Frame):
                 
                 self.photoTaken = True
                 songNames[3] = emotionRecognition.retEmotion(img_array)  # gets emotion most likely found
-                self.emotion["text"] = songNames[3]
+                self.labelRight["text"] = songNames[3]
                 songNames[4] = "Photo has been taken."
         return imgtk
     def playSongSC(self): # plays the song from emotion string
-        self.emotion["text"] = "Looking for song"
+        self.labelRight["text"] = "Looking for song"
         try: # catches exception so that gui doesn't freeze indefinitely
             audio = flAudio.facelistAudio() # init soundcloud library
             # neutral isn't a great keyword, so only use emotion if we didn't get neutral
             if songNames[3] != "Neutral": 
                 audio.getSong(songNames[3].lower())
             else:
-                audio.getSong("relax") #used instead of neutral
+                audio.getSong("relaxing") #used instead of neutral
             #songNames[1] = audio.getTrackTitle() 
             # updates gui to song name
             #self.songLabels[1]["text"] = songNames[1]
@@ -226,9 +238,9 @@ class Player(Tk.Frame):
             #self.songLabels[4]["text"] = songNames[4]
             if audio.retSizeArr() > 0:
                 self.songURL = audio.playSongs()
-                self.emotion["text"] = self.songURL[0:20]
+                self.labelRight["text"] = self.songURL[0:40]
         except:
-            self.emotion["text"] = "Couldn't play song"
+            self.labelRight["text"] = "Couldn't play song"
     def switchBool(self): # turns on and off the webcam feed
         self.updateB = not self.updateB
         if self.updateB is True:
@@ -279,7 +291,7 @@ class Player(Tk.Frame):
             #self.Media = self.Instance.media_new('https://cf-media.sndcdn.com/1hpt3bZE0l27.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vMWhwdDNiWkUwbDI3LjEyOC5tcDMiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE0NzkyODEwMzB9fX1dfQ__&Signature=NCAsX2V08EeVLi13cl9udAftjP0mXK9H6DYOiRDGJjCSoaPFNsAtJ7mnpnMGu7ShCFcEBqYc1yjsq9yxwQNQ9peN7SCAwni4AKkMay10thWFc-AUHBIYDAEmQIY3s2WJpx0yUY99ekO5maEz8r4IxKlG8TBUpC8LksaOqknRc3VmlIX1hJQoErjOt6C7QxIWnm~PGIYb5ZK2wzVNkxAV4pml3wZ~vAGH80cYFA42842VhoHCU~5Lzs8cEbh1hmbivHTElQ-5Q1QmHEoNTPFbE-BEaMVK0-ywsgIBkXk1RkEXlpz1u419EVxZ4jmLOUz32Zwm0~oaWCiOPkCsaXxyaw__&Key-Pair-Id=APKAJAGZ7VMH2PFPW6UQ')
             #self.songURL = 'https://cf-media.sndcdn.com/1hpt3bZE0l27.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vMWhwdDNiWkUwbDI3LjEyOC5tcDMiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE0NzkyODEwMzB9fX1dfQ__&Signature=NCAsX2V08EeVLi13cl9udAftjP0mXK9H6DYOiRDGJjCSoaPFNsAtJ7mnpnMGu7ShCFcEBqYc1yjsq9yxwQNQ9peN7SCAwni4AKkMay10thWFc-AUHBIYDAEmQIY3s2WJpx0yUY99ekO5maEz8r4IxKlG8TBUpC8LksaOqknRc3VmlIX1hJQoErjOt6C7QxIWnm~PGIYb5ZK2wzVNkxAV4pml3wZ~vAGH80cYFA42842VhoHCU~5Lzs8cEbh1hmbivHTElQ-5Q1QmHEoNTPFbE-BEaMVK0-ywsgIBkXk1RkEXlpz1u419EVxZ4jmLOUz32Zwm0~oaWCiOPkCsaXxyaw__&Key-Pair-Id=APKAJAGZ7VMH2PFPW6UQ'
         self.Media = self.Instance.media_new(self.songURL)
-
+        self.lastURL = self.songURL
         self.Media.get_mrl()
 
         self.player.set_media(self.Media)
@@ -312,9 +324,12 @@ class Player(Tk.Frame):
         if not self.player.get_media():
             self.OnOpen()
         else:
-            # Try to launch the media, if this fails display an error message
-            if self.player.play() == -1:
-                self.errorDialog("Unable to play.")
+            if self.lastURL != self.songURL:
+                self.OnOpen()
+            else:
+                # Try to launch the media, if this fails display an error message
+                if self.player.play() == -1:
+                    self.errorDialog("Unable to play.")
 
     def GetHandle(self):
         return self.videopanel.winfo_id()
