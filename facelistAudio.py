@@ -29,7 +29,7 @@ class facelistAudio:
 
     #get a song based off of string passed in
     def getSong(self, search_str):
-        emotion = search_str
+        self.emotion = search_str
         count = 0
         rand = random.randint(0,19)
         #search by happy tag
