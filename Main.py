@@ -230,7 +230,7 @@ class Player(Tk.Frame):
             if songNames[3] != "Neutral": 
                 audio.getSong(songNames[3].lower())
             else:
-                audio.getSong("relaxing") #used instead of neutral
+                audio.getSong("chill") #used instead of neutral
             #songNames[1] = audio.getTrackTitle() 
             # updates gui to song name
             #self.songLabels[1]["text"] = songNames[1]
