@@ -27,6 +27,7 @@ Date: 23-09-2015
 
 # import external libraries
 import vlc
+import twitter
 import sys
 import cv2
 import numpy
@@ -60,6 +61,23 @@ songNames.append("--NOT SET--")
 songNames.append("Emotion:")
 songNames.append("--NOT SET--")
 songNames.append("Powered by SoundCloud")
+token = "804025595612889088-rQcroYgshimqQM8j9l8tmPcLpVNslUn"
+token_key = "mcg8xNdD98TthPulQF2Ah1IDlsP04AZLAVOEuKYQMHn5Q"
+con_secret = "PkxBzJUmRthw3rAVMOXkhnJVU"
+con_secret_key = "oDnCke8u3JsVGFN4vBaBeBSNfCaHHi099nD88TbYzy5ellE8I3"
+new_status = "testing testing"
+
+api = twitter.Api(consumer_key='PkxBzJUmRthw3rAVMOXkhnJVU',
+consumer_secret='oDnCke8u3JsVGFN4vBaBeBSNfCaHHi099nD88TbYzy5ellE8I3',
+access_token_key='804025595612889088-rQcroYgshimqQM8j9l8tmPcLpVNslUn',
+access_token_secret='mcg8xNdD98TthPulQF2Ah1IDlsP04AZLAVOEuKYQMHn5Q')
+
+#status = api.PostUpdate('I blank python-twitter!')
+
+class songClass(object):
+    def __init__(self, name, url):
+        self.songName = name
+        self.songURL = url
 
 class ttkTimer(Thread):
     """a class serving same function as wxTimer... but there may be better ways to do this
@@ -103,7 +121,8 @@ class Player(Tk.Frame):
         #self.createWidgets() # build gui
         self.c = 0
         self.numCount = 0
-
+        self.songs = []
+        self.songCounter = 0
         self.parent = parent
 
         if title == None:
@@ -155,12 +174,17 @@ class Player(Tk.Frame):
         pause  = ttk.Button(ctrlpanel, text="Pause", command=self.OnPause)
         play   = ttk.Button(ctrlpanel, text="Play", command=self.OnPlay)
         stop   = ttk.Button(ctrlpanel, text="Stop", command=self.OnStop)
-        volume = ttk.Button(ctrlpanel, text="Volume", command=self.OnSetVolume)
-        
+        #volume = ttk.Button(ctrlpanel, text="Volume", command=self.OnSetVolume)
+        volume = ttk.Label(ctrlpanel, text="Volume")
 
+        nextButton = ttk.Button(ctrlpanel, text="Next", command=self.OnNext)
+        prevButton = ttk.Button(ctrlpanel, text="Previous", command=self.OnPrev)
+
+        prevButton.pack(side=Tk.LEFT)
         pause.pack(side=Tk.LEFT)
         play.pack(side=Tk.LEFT)
         stop.pack(side=Tk.LEFT)
+        nextButton.pack(side=Tk.LEFT)
         
         volume.pack(side=Tk.LEFT)
 
@@ -196,7 +220,25 @@ class Player(Tk.Frame):
         self.parent.update()
 
         #self.player.set_hwnd(self.GetHandle()) # for windows, OnOpen does does this
+    def OnNext(self):
+        
+        if len(self.songs) > 0 and self.songCounter + 1 <= len(self.songs):
+            self.songCounter += 1
+            self.songURL = self.songs[self.songCounter-1]["stream_url"]
+            self.labelRight["text"] = self.songs[self.songCounter-1]["stream_url"][6:30]
+            self.labelMiddle["text"] = self.songs[self.songCounter-1]["track_title"]
+            self.OnPlay()
+        self.labelLeft["text"] = self.songCounter
+    def OnPrev(self):
+        self.labelLeft["text"] = self.songCounter
+        if len(self.songs) > 0 and self.songCounter - 1 > 0:
+            self.songCounter -= 1
+            self.songURL = self.songs[self.songCounter-1]["stream_url"]
+            self.labelRight["text"] = self.songs[self.songCounter-1]["stream_url"][6:30]
+            self.labelMiddle["text"] = self.songs[self.songCounter-1]["track_title"]
+            self.OnPlay()
 
+        self.labelLeft["text"] = self.songCounter
     def takethephoto(self): #updates gui before taking photo
         songNames[4] = "Analyzing Photo..."
         #self.songLabels[4]["text"] = songNames[4]
@@ -227,18 +269,24 @@ class Player(Tk.Frame):
         try: # catches exception so that gui doesn't freeze indefinitely
             audio = flAudio.facelistAudio() # init soundcloud library
             # neutral isn't a great keyword, so only use emotion if we didn't get neutral
-            if songNames[3] != "Neutral": 
-                audio.getSong(songNames[3].lower())
+            songNames[3] = "happy"
+            if songNames[3] != "Neutral":  
+                audio.getSong(songNames[3].lower())    
             else:
                 audio.getSong("relaxing") #used instead of neutral
             #songNames[1] = audio.getTrackTitle() 
             # updates gui to song name
             #self.songLabels[1]["text"] = songNames[1]
-            songNames[4] = "Found song."
+            #songNames[4] = "Found song."
             #self.songLabels[4]["text"] = songNames[4]
             if audio.retSizeArr() > 0:
-                self.songURL = audio.playSongs()
-                self.labelRight["text"] = self.songURL[0:40]
+                tempVar = audio.getTrackInfo(audio.retSizeArr() - 1)
+                self.songs.append(tempVar)
+                self.songCounter = audio.retSizeArr()
+                self.songURL = self.songs[len(self.songs)-1]["stream_url"]
+                self.labelRight["text"] = self.songs[audio.retSizeArr()-1]["stream_url"][8:30]
+                self.labelMiddle["text"] = self.songs[audio.retSizeArr()-1]["track_title"]
+                self.labelLeft["text"] = self.songs[audio.retSizeArr()-1]["track_artist"]["username"]
         except:
             self.labelRight["text"] = "Couldn't play song"
     def switchBool(self): # turns on and off the webcam feed
