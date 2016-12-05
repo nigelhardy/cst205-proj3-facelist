@@ -74,11 +74,6 @@ access_token_secret='mcg8xNdD98TthPulQF2Ah1IDlsP04AZLAVOEuKYQMHn5Q')
 
 #status = api.PostUpdate('I blank python-twitter!')
 
-class songClass(object):
-    def __init__(self, name, url):
-        self.songName = name
-        self.songURL = url
-
 class ttkTimer(Thread):
     """a class serving same function as wxTimer... but there may be better ways to do this
     """
@@ -269,7 +264,6 @@ class Player(Tk.Frame):
         try: # catches exception so that gui doesn't freeze indefinitely
             audio = flAudio.facelistAudio() # init soundcloud library
             # neutral isn't a great keyword, so only use emotion if we didn't get neutral
-            songNames[3] = "happy"
             if songNames[3] != "Neutral":  
                 audio.getSong(songNames[3].lower())    
             else:
