@@ -8,7 +8,7 @@ from PIL import Image as im
 from PIL import ImageEnhance as imEn
 import indicoio as ind
 import operator
-
+from random import randint
 ind.config.api_key = "18f4dba9b853159e163402e9ddba8abc"
 
 # crops image to just the face
@@ -30,9 +30,28 @@ def faceLocalization(img):
 #gets probability of emotion from indico api
 #sorts dictionary by value and returns string of highest probability emotion
 def retEmotion(data):
+	happySyns = ["joyful","happy","upbeat","content","beaming","glad","delighted","ecstatic","thrilled","joy","lively","pleased"]
+	sadSyns = ["sad","bitter","down","somber","sorry","meloncholy","heartbroken","pessimistic","mournful","gloomy","grief","troubled","crying"]
+	angrySyns = ["enraged","furious","heated","irritable","indignant","outraged","offended","fiery","riled","angry","wrath","rage"]
+	fearSyns = ["fear","terror","worry","horror","dread","panic","scared","uneasy","timid","fright","stress","phobia"]
+	surpiseSyns = ["amazement","amazing","awe","jolt","shock","wonder","awed","bewildered","bewilder","revalation","unexpected","astounding"]
+	emotionSyns = {}
+	emotionSyns["happySyns"] = happySyns
+	emotionSyns["sadSyns"] = sadSyns
+	emotionSyns["angrySyns"] = angrySyns
+	emotionSyns["fearSyns"] = fearSyns
+	emotionSyns["surpriseSyns"] = surpiseSyns
 	emoDict = ind.fer(data)
 	sortedDict = sorted(emoDict.items(), key = operator.itemgetter(1))
-	return sortedDict[5][0]
+	mostLikely = sortedDict[5][0]
+	secondLikely = sortedDict[4][0]
+	if mostLikely == "Neutral":
+		mostLikely = sortedDict[4][0]
+		secondLikely = sortedDict[3][0]
+	print(sortedDict)
+	emotion = mostLikely.lower()+"Syns"
+	randomSynLoc = randint(0,len(emotionSyns[emotion]))
+	return emotionSyns[emotion][randomSynLoc]
 
 #img = im.open("cap1.jpg")
 #img_array = faceLocalization(img)
