@@ -39,10 +39,12 @@ if sys.version_info[0] < 3:
     import Tkinter as Tk
     from Tkinter import ttk
     from Tkinter.filedialog import askopenfilename
+    from Tkinter import filedialog as fd
 else:
     import tkinter as Tk
     from tkinter import ttk
     from tkinter.filedialog import askopenfilename
+    from tkinter import filedialog as fd
 
 # import standard libraries
 import os
@@ -55,12 +57,9 @@ import facelistAudio as flAudio
 import soundcloud
 
 global songNames # array of strings to fill Tkinter labels
+
 songNames = []
-songNames.append("Song Name:")
-songNames.append("--NOT SET--")
-songNames.append("Emotion:")
-songNames.append("--NOT SET--")
-songNames.append("Powered by SoundCloud")
+
 token = "804025595612889088-rQcroYgshimqQM8j9l8tmPcLpVNslUn"
 token_key = "mcg8xNdD98TthPulQF2Ah1IDlsP04AZLAVOEuKYQMHn5Q"
 con_secret = "PkxBzJUmRthw3rAVMOXkhnJVU"
@@ -102,61 +101,44 @@ class Player(Tk.Frame):
         Tk.Frame.__init__(self, parent)
         self.songURL = "EMPTY"
         self.songLabels = [] # list for names of songs
-        #self.actButton = Button() # activate webcam button
         self.webcamLbl = ttk.Label() # webcam image widget label
         self.photoTaken = False
         self.webcam = cv2.VideoCapture(0)
-        self.img = self.webcam
         self.updateB = True # bool to start and stop webcam update
         self.lastURL = "EMPTY"
-        #self.pack() # prepare gui
         self.speed = 10 # milliseconds between UI refresh
-        self.counter = 0
-        self.count = 0
-        #self.createWidgets() # build gui
-        self.c = 0
-        self.numCount = 0
         self.songs = []
         self.songCounter = 0
         self.parent = parent
+        self.emotion = ""
+        self.songDict = {}
+        self.fileList = 0
 
         if title == None:
             title = "tk_vlc"
         self.parent.title(title)
 
-        # Menu Bar
-        #   File Menu
-        '''menubar = Tk.Menu(self.parent)
-        self.parent.config(menu=menubar)
-
-        fileMenu = Tk.Menu(menubar)
-        fileMenu.add_command(label="Open", underline=0, command=self.OnOpen)
-        fileMenu.add_command(label="Exit", underline=1, command=_quit)
-        menubar.add_cascade(label="File", menu=fileMenu)
-'''
         self.topPanel = ttk.Frame(self.parent)
-        self.labelLeft = ttk.Label(self.topPanel, text="Label1")
-        self.labelMiddle = ttk.Label(self.topPanel, text="Label2")
-        self.labelRight = ttk.Label(self.topPanel, text="labelRight")
-        webCamButton = ttk.Button(self.topPanel, text="Webcam", command=self.activateWebcam)
+        self.labelLeft = ttk.Label(self.topPanel, text="Song: N/A")
+        self.labelMiddle = ttk.Label(self.topPanel, text="Artist: N/A")
+        self.labelRight = ttk.Label(self.topPanel, text="Status: Waiting")
+        self.webCamButton = ttk.Button(self.topPanel, text="Webcam Active", command=self.activateWebcam)
         shutter = ttk.Button(self.topPanel, text="Take Photo", command=self.takethephoto)
-        playSongButton = ttk.Button(self.topPanel, text="Find Song", command=self.playSongSC)
+        photostripButton = ttk.Button(self.topPanel, text="Photostrip", command=self.browseFile)
 
         self.labelLeft.pack(side=Tk.LEFT)
         self.labelMiddle.pack(side=Tk.LEFT)
         self.labelRight.pack(side=Tk.LEFT)
-        playSongButton.pack(side=Tk.RIGHT)
+        photostripButton.pack(side=Tk.RIGHT)
         shutter.pack(side=Tk.RIGHT)
-        webCamButton.pack(side=Tk.RIGHT)
-        
-        
+        self.webCamButton.pack(side=Tk.RIGHT)
         self.topPanel.pack(fill=Tk.BOTH, expand=1)
+
         # The second panel holds controls
         self.player = None
         self.videopanel = ttk.Frame(self.parent)
-        #self.canvas = Tk.Canvas(self.videopanel).pack(fill=Tk.BOTH,expand=1)
         image = im.open("your-image.jpg") 
-        image = image.resize((300,300), im.BILINEAR)
+        image = image.resize((400,400), im.BILINEAR)
         photo = image
         imgtk = imTk.PhotoImage(image=image)
         
@@ -169,7 +151,6 @@ class Player(Tk.Frame):
         pause  = ttk.Button(ctrlpanel, text="Pause", command=self.OnPause)
         play   = ttk.Button(ctrlpanel, text="Play", command=self.OnPlay)
         stop   = ttk.Button(ctrlpanel, text="Stop", command=self.OnStop)
-        #volume = ttk.Button(ctrlpanel, text="Volume", command=self.OnSetVolume)
         volume = ttk.Label(ctrlpanel, text="Volume")
 
         nextButton = ttk.Button(ctrlpanel, text="Next", command=self.OnNext)
@@ -190,6 +171,8 @@ class Player(Tk.Frame):
         
         ctrlpanel.pack(side=Tk.BOTTOM)
 
+
+
         ctrlpanel2 = ttk.Frame(self.parent)
         self.scale_var = Tk.DoubleVar()
         self.timeslider_last_val = ""
@@ -200,106 +183,96 @@ class Player(Tk.Frame):
         self.timeslider_last_update = time.time()
         ctrlpanel2.pack(side=Tk.BOTTOM,fill=Tk.X)
 
+        ctrlpanel3 = ttk.Frame(self.parent)
+        self.message = ttk.Label(ctrlpanel3, text="Message")
+        self.message.pack(side=Tk.TOP)
+        ctrlpanel3.pack(fill=Tk.BOTH, side=Tk.LEFT)
         # VLC player controls
         self.Instance = vlc.Instance()
         self.player = self.Instance.media_player_new()
-
-        # below is a test, now use the File->Open file menu
-        #media = self.Instance.media_new('output.mp4')
-        #self.player.set_media(media)
-        #self.player.play() # hit the player button
-        #self.player.video_set_deinterlace(str_to_bytes('yadif'))
 
         self.timer = ttkTimer(self.OnTimer, 1.0)
         self.timer.start()
         self.parent.update()
 
-        #self.player.set_hwnd(self.GetHandle()) # for windows, OnOpen does does this
     def OnNext(self):
-        
-        if len(self.songs) > 0 and self.songCounter + 1 <= len(self.songs):
+        if len(self.songs) > 0 and self.songCounter < len(self.songs):
             self.songCounter += 1
             self.songURL = self.songs[self.songCounter-1]["stream_url"]
-            self.labelRight["text"] = self.songs[self.songCounter-1]["stream_url"][6:30]
-            self.labelMiddle["text"] = self.songs[self.songCounter-1]["track_title"]
-            self.OnPlay()
-        self.labelLeft["text"] = self.songCounter
+            self.labelLeft["text"] = self.songs[self.songCounter-1]["track_title"]
+            self.labelMiddle["text"] = " by " + self.songs[self.songCounter-1]["track_artist"]["username"]
+            self.after(20, self.OnStop)
+
+
     def OnPrev(self):
-        self.labelLeft["text"] = self.songCounter
         if len(self.songs) > 0 and self.songCounter - 1 > 0:
             self.songCounter -= 1
             self.songURL = self.songs[self.songCounter-1]["stream_url"]
-            self.labelRight["text"] = self.songs[self.songCounter-1]["stream_url"][6:30]
-            self.labelMiddle["text"] = self.songs[self.songCounter-1]["track_title"]
-            self.OnPlay()
+            self.labelLeft["text"] = self.songs[self.songCounter-1]["track_title"]
+            self.labelMiddle["text"] = " by " + self.songs[self.songCounter-1]["track_artist"]["username"]
+            self.after(20, self.OnStop)
 
-        self.labelLeft["text"] = self.songCounter
     def takethephoto(self): #updates gui before taking photo
-        songNames[4] = "Analyzing Photo..."
-        #self.songLabels[4]["text"] = songNames[4]
+        self.labelRight["text"] = "Status: Analyzing Photo..."
         self.after(50, self.take_photo) #takes photo after 50 milliseconds
 
     def take_photo(self):
         if(self.webcam.isOpened()):
             if self.updateB is True:
-                self.updateB = False
+                
+                timestamp = time.strftime("%m_%d_%y-%H%M%S")
                 _, frame = self.webcam.read()
-                success = cv2.imwrite("cap%d.jpg"% self.count,frame) #saves photo
-                self.count += 1
+                success = cv2.imwrite("captures/cap%s.jpg" %timestamp, frame)
                 frame = cv2.flip(frame, 1)
                 cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA) # converts colors/image
                 self.img = im.fromarray(cv2image)
+                self.activateWebcam()
                 img_array = emotionRecognition.faceLocalization(self.img) #analyzes photo
+                self.message["text"] = "Got face."
                 imgtk = imTk.PhotoImage(image=self.img) # converts photo to Tk Image
                 self.webcamLbl.imgtk = imgtk
                 self.webcamLbl.configure(image=imgtk) # puts img into gui
-                
                 self.photoTaken = True
-                songNames[3] = emotionRecognition.retEmotion(img_array)  # gets emotion most likely found
-                self.labelRight["text"] = songNames[3]
-                songNames[4] = "Photo has been taken."
-        return imgtk
-    def playSongSC(self): # plays the song from emotion string
-        self.labelRight["text"] = "Looking for song"
+                self.emotion = emotionRecognition.retEmotion(img_array)  # gets emotion most likely found
+                self.message["text"] = "Got emotion."
+                self.labelRight["text"] = " - Emotion: " + self.emotion
+                self.after(100, self.getSong)
+    
+    def getSong(self): # plays the song from emotion string
+        self.labelRight["text"] = "Status: Looking for song"
         try: # catches exception so that gui doesn't freeze indefinitely
             audio = flAudio.facelistAudio() # init soundcloud library
             # neutral isn't a great keyword, so only use emotion if we didn't get neutral
-            if songNames[3] != "Neutral":  
-                audio.getSong(songNames[3].lower())    
-            else:
-                audio.getSong("relaxing") #used instead of neutral
-            #songNames[1] = audio.getTrackTitle() 
-            # updates gui to song name
-            #self.songLabels[1]["text"] = songNames[1]
-            #songNames[4] = "Found song."
-            #self.songLabels[4]["text"] = songNames[4]
+            self.message["text"] = "Init Soundcloud"
+            songDict = audio.getSong(self.emotion.lower())
+            
             if audio.retSizeArr() > 0:
                 tempVar = audio.getTrackInfo(audio.retSizeArr() - 1)
                 self.songs.append(tempVar)
                 self.songCounter = audio.retSizeArr()
                 self.songURL = self.songs[len(self.songs)-1]["stream_url"]
-                self.labelRight["text"] = self.songs[audio.retSizeArr()-1]["stream_url"][8:30]
-                self.labelMiddle["text"] = self.songs[audio.retSizeArr()-1]["track_title"]
-                self.labelLeft["text"] = self.songs[audio.retSizeArr()-1]["track_artist"]["username"]
+                self.message["text"] = "Done."
+                self.labelLeft["text"] = self.songs[audio.retSizeArr()-1]["track_title"]
+                self.labelMiddle["text"] = "by " + self.songs[audio.retSizeArr()-1]["track_artist"]["username"]
+                self.labelRight["text"] = " - Emotion: " + self.emotion
+            else:
+                self.message["text"] = "Couldn't find song."
         except:
-            self.labelRight["text"] = "Couldn't play song"
-    def switchBool(self): # turns on and off the webcam feed
-        self.updateB = not self.updateB
-        if self.updateB is True:
-            self.actButton["text"] = "Camera Activated"
-            self.updateFrame()
-        else:
-            self.actButton["text"] = "Camera Deactivated"
+            self.message["text"] = "Couldn't play song"
+
     def updateFrame(self): # updates gui
         if self.updateB is True:
-            #self.songLabels[0] = self.c
-            #for s in songNames:
-                #self.songLabels[self.count]["text"] = s
             self.updateCam()
             self.after(100, self.updateFrame)
+
     def activateWebcam(self):
         self.updateB = not self.updateB
-        self.after(100, self.updateFrame)
+        if self.updateB == True:
+            self.webCamButton["text"] = "Webcam Active"
+            self.after(20, self.updateFrame)
+        else:
+            self.webCamButton["text"] = "Webcam Idle"
+        
         
     def updateCam(self): #updates webcam feed
         _, frame = self.webcam.read() # reads from webcam
@@ -321,37 +294,18 @@ class Player(Tk.Frame):
         # if a file is already running, then stop it.
         self.OnStop()
 
-        # Create a file dialog opened in the current home directory, where
-        # you can display all kind of files, having as title "Choose a file".
-        p = pathlib.Path(os.path.expanduser("~"))
-        #fullname =  askopenfilename(initialdir = p, title = "choose your file",filetypes = (("all files","*.*"),("mp4 files","*.mp4")))
-        #if os.path.isfile(fullname) or True:
-            #dirname  = os.path.dirname(fullname)
-            #filename = os.path.basename(fullname)
-            # Creation
-            #self.Media = self.Instance.media_new(str(os.path.join(dirname, filename)))
-            #self.Media = self.Instance.media_new('https://cf-media.sndcdn.com/1hpt3bZE0l27.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vMWhwdDNiWkUwbDI3LjEyOC5tcDMiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE0NzkyODEwMzB9fX1dfQ__&Signature=NCAsX2V08EeVLi13cl9udAftjP0mXK9H6DYOiRDGJjCSoaPFNsAtJ7mnpnMGu7ShCFcEBqYc1yjsq9yxwQNQ9peN7SCAwni4AKkMay10thWFc-AUHBIYDAEmQIY3s2WJpx0yUY99ekO5maEz8r4IxKlG8TBUpC8LksaOqknRc3VmlIX1hJQoErjOt6C7QxIWnm~PGIYb5ZK2wzVNkxAV4pml3wZ~vAGH80cYFA42842VhoHCU~5Lzs8cEbh1hmbivHTElQ-5Q1QmHEoNTPFbE-BEaMVK0-ywsgIBkXk1RkEXlpz1u419EVxZ4jmLOUz32Zwm0~oaWCiOPkCsaXxyaw__&Key-Pair-Id=APKAJAGZ7VMH2PFPW6UQ')
-            #self.songURL = 'https://cf-media.sndcdn.com/1hpt3bZE0l27.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmLW1lZGlhLnNuZGNkbi5jb20vMWhwdDNiWkUwbDI3LjEyOC5tcDMiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE0NzkyODEwMzB9fX1dfQ__&Signature=NCAsX2V08EeVLi13cl9udAftjP0mXK9H6DYOiRDGJjCSoaPFNsAtJ7mnpnMGu7ShCFcEBqYc1yjsq9yxwQNQ9peN7SCAwni4AKkMay10thWFc-AUHBIYDAEmQIY3s2WJpx0yUY99ekO5maEz8r4IxKlG8TBUpC8LksaOqknRc3VmlIX1hJQoErjOt6C7QxIWnm~PGIYb5ZK2wzVNkxAV4pml3wZ~vAGH80cYFA42842VhoHCU~5Lzs8cEbh1hmbivHTElQ-5Q1QmHEoNTPFbE-BEaMVK0-ywsgIBkXk1RkEXlpz1u419EVxZ4jmLOUz32Zwm0~oaWCiOPkCsaXxyaw__&Key-Pair-Id=APKAJAGZ7VMH2PFPW6UQ'
         self.Media = self.Instance.media_new(self.songURL)
         self.lastURL = self.songURL
         self.Media.get_mrl()
 
         self.player.set_media(self.Media)
         self.player.play()
-        # Report the title of the file chosen
-        #title = self.player.get_title()
-        #  if an error was encountred while retriving the title, then use
-        #  filename
-        #if title == -1:
-        #    title = filename
-        #self.SetTitle("%s - tkVLCplayer" % title)
 
         # set the window id where to render VLC's video output
         if platform.system() == 'Windows':
             self.player.set_hwnd(self.GetHandle())
         else:
             self.player.set_xwindow(self.GetHandle()) # this line messes up windows
-        # FIXME: this should be made cross-platform
 
         # set the volume slider to the current volume
         #self.volslider.SetValue(self.player.audio_get_volume() / 2)
@@ -388,7 +342,42 @@ class Player(Tk.Frame):
         self.player.stop()
         # reset the time slider
         self.timeslider.set(0)
+    #start photostrip creation functions 
+    def browseFile(self):
 
+        browse = fd.askopenfilenames(multiple=True, title = "Choose 5 Images (use ctrl)")
+        self.fileList = root.tk.splitlist(browse)
+
+        # print(self.fileList)
+        self.createStrip()
+
+    def createStrip(self):
+        timestamp = time.strftime("%a_%d%b%Y_%H.%M.%S")
+
+
+        if len(self.fileList) == 5:
+            count = 0
+            newImage = im.new('RGB', (1000,2800),(255,255,255))
+            for f in self.fileList:
+                if count == 0:
+                    start = (100,50)
+                    count+=1
+                else:
+                    ystart = 50 + (count*550)
+                    start = (100,ystart)
+                    count+=1
+                image = im.open(f);
+                resized = image.resize((800,500));
+                newImage.paste(resized,start)
+                filename = "photostrips/%s.jpg"%timestamp
+            newImage.save(filename)
+            savedImage = im.open(filename)
+            savedImage.load()
+            savedImage.show()
+
+        else:
+            self.initText = "CHOOSE 5 IMAGES (NO MORE OR LESS)."
+            self.label.config(fg='red')
     def OnTimer(self):
         """Update the time slider according to the current movie time.
         """
