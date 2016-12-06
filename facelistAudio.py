@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> d92709ea0a7feb3e266d88b75c66793ad698c2fb
 #Author:  Brandon Avery
 #Created:  10/14/2016
 #CSUMB CST-205 Project 2
@@ -10,8 +15,13 @@ import sys
 import time
 import random 
 
+<<<<<<< HEAD
 class facelistAudio(object):
     #audio component to FaceList project
+=======
+class facelistAudio:
+    'audio component to FaceList project'
+>>>>>>> d92709ea0a7feb3e266d88b75c66793ad698c2fb
 
     #class variables
     tracks = [] #array of tracks
