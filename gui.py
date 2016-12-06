@@ -1,21 +1,23 @@
 #Author:  Nigel Hardy
 #Created:  10/14/2016
-#CSUMB CST-205 Project 2
-#Team 24
-#GitHub:  https://github.com/nigelhardy/cst205-proj2-facelist
+#CSUMB CST-205 Project 3
+#Team 40
+#GitHub:  https://github.com/nigelhardy/cst205-proj3-facelist
 import cv2
 import numpy
 from matplotlib import pyplot as plt
 import PIL.Image as im
 import PIL.ImageTk as imTk
+#from PIL import ImageTk as imTk
 import os
-if os.name != "nt":
-    from Tkinter import *
-else:
-    from tkinter import *
+from tkinter import *
 import emotionRecognition
 import facelistAudio as flAudio
 import soundcloud
+import threading
+import time
+from threading import Thread
+
 
 global songNames # array of strings to fill Tkinter labels
 songNames = []
@@ -24,6 +26,7 @@ songNames.append("--NOT SET--")
 songNames.append("Emotion:")
 songNames.append("--NOT SET--")
 songNames.append("Powered by SoundCloud")
+lock = threading.Lock()
 
 class Application(Frame): # class for gui
 
@@ -41,9 +44,9 @@ class Application(Frame): # class for gui
             songNames[4] = "Found song."
             self.songLabels[4]["text"] = songNames[4]
             if audio.retSizeArr() > 0:
-                audio.playSongs()
+                self.songURL = audio.playSongs()
         except:
-            print "Couldn't play song"
+            print("Couldn't play song")
 
     def switchBool(self): # turns on and off the webcam feed
         self.updateB = not self.updateB
@@ -59,7 +62,7 @@ class Application(Frame): # class for gui
             for s in songNames:
                 self.songLabels[self.count]["text"] = s
                 self.count += 1
-            self.updateCam()
+            #self.updateCam()
             self.after(self.speed, self.updateFrame)
 
     def updateCam(self): #updates webcam feed
@@ -70,7 +73,6 @@ class Application(Frame): # class for gui
         imgtk = imTk.PhotoImage(image=self.img) #converts to proper image format
         self.webcamLbl.imgtk = imgtk 
         self.webcamLbl.configure(image=imgtk) # puts img into gui
-        #self.webcamLbl.after(sp,self.updateCam)
 
     def createWidgets(self):
         # image below is used as a placeholder, this is the only way i could get the video to 
@@ -85,10 +87,13 @@ class Application(Frame): # class for gui
         #initializes different 'widgets' in Tkinter
         image = im.open("your-image.jpg") 
         image = image.resize((300,300), im.BILINEAR)
-        photo = imTk.PhotoImage(image)
-        self.webcamLbl = Label(self, image=photo)
+        photo = image
+        imgtk = imTk.PhotoImage(image=image)
+        self.webcamLbl = Label(self, image=imgtk)
+        
         self.webcamLbl.grid(row=1,column=3,columnspan=1, rowspan=lastRow-2)
-        self.webcamLbl.image = photo
+        self.webcamLbl.image = imgtk
+
         self.actButton = Button(self, text="Camera Activated", borderwidth=2, command=self.switchBool, width=self.wid)
         self.actButton.grid(row=1, column=0, columnspan=3, sticky=W, padx=pdx)
         # Labelss containing text
@@ -114,7 +119,7 @@ class Application(Frame): # class for gui
 
         self.btnPic = Button(self, text="Take Picture", width=self.wid, height=4)
         self.btnPic.grid(row=lastRow-4, column=0, columnspan=3, rowspan=4, padx=pdx, pady=10, sticky=W)
-        self.btnPic["command"] = self.takethephoto
+        self.btnPic["command"] = self.tryThreading
 
     def takethephoto(self): #updates gui before taking photo
         songNames[4] = "Analyzing Photo..."
@@ -136,8 +141,15 @@ class Application(Frame): # class for gui
                 self.photoTaken = True
                 songNames[3] = emotionRecognition.retEmotion(img_array)  # gets emotion most likely found 
                 songNames[4] = "Photo has been taken."
-        return imTk
-
+        return imgtk
+    def tryThreading(self):
+        t = Thread(target=self.printStuff)
+        t.start()
+    def printStuff(self):
+        for x in range(0, 1000):
+            lock.acquire()
+            print(x)
+            lock.release()
     def playSongAfter(self):
         if self.photoTaken is True:
             songNames[4] = "Finding Song..."
