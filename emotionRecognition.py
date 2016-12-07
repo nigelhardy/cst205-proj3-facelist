@@ -46,12 +46,15 @@ def retEmotion(data):
 	mostLikely = sortedDict[5][0]
 	secondLikely = sortedDict[4][0]
 	if mostLikely == "Neutral":
-		mostLikely = sortedDict[4][0]
-		secondLikely = sortedDict[3][0]
-	print(sortedDict)
-	emotion = mostLikely.lower()+"Syns"
-	randomSynLoc = randint(0,len(emotionSyns[emotion]))
-	return emotionSyns[emotion][randomSynLoc]
+		mostLikely = "chill"
+	"""if mostLikely == "Neutral":
+					mostLikely = sortedDict[4][0]
+					secondLikely = sortedDict[3][0]
+				print(sortedDict)
+				emotion = mostLikely.lower()+"Syns"
+				randomSynLoc = randint(0,len(emotionSyns[emotion]))"""
+	#return emotionSyns[emotion][randomSynLoc]
+	return mostLikely
 
 #img = im.open("cap1.jpg")
 #img_array = faceLocalization(img)

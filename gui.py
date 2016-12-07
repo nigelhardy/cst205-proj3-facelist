@@ -1,14 +1,14 @@
-# Author:  Nigel Hardy
-# Created:  10/14/2016
-# CSUMB CST-205 Project 3
-# Team 40
-# GitHub:  https://github.com/nigelhardy/cst205-proj3-facelist
+#Author:  Nigel Hardy
+#Created:  10/14/2016
+#CSUMB CST-205 Project 3
+#Team 40
+#GitHub:  https://github.com/nigelhardy/cst205-proj3-facelist
 import cv2
 import numpy
 from matplotlib import pyplot as plt
 import PIL.Image as im
 import PIL.ImageTk as imTk
-# from PIL import ImageTk as imTk
+#from PIL import ImageTk as imTk
 import os
 from tkinter import *
 import emotionRecognition
@@ -19,7 +19,7 @@ import time
 from threading import Thread
 
 
-global songNames  # array of strings to fill Tkinter labels
+global songNames # array of strings to fill Tkinter labels
 songNames = []
 songNames.append("Song Name:")
 songNames.append("--NOT SET--")
@@ -28,19 +28,17 @@ songNames.append("--NOT SET--")
 songNames.append("Powered by SoundCloud")
 lock = threading.Lock()
 
+class Application(Frame): # class for gui
 
-class Application(Frame):  # class for gui
-
-    def playSongSC(self):  # plays the song from emotion string
-        try:  # catches exception so that gui doesn't freeze indefinitely
-            audio = flAudio.facelistAudio()  # init soundcloud library
-            # neutral isn't a great keyword, so only use emotion if we didn't
-            # get neutral
-            if songNames[3] != "Neutral":
+    def playSongSC(self): # plays the song from emotion string
+        try: # catches exception so that gui doesn't freeze indefinitely
+            audio = flAudio.facelistAudio() # init soundcloud library
+            # neutral isn't a great keyword, so only use emotion if we didn't get neutral
+            if songNames[3] != "Neutral": 
                 audio.getSong(songNames[3].lower())
             else:
-                audio.getSong("relaxing")  # used instead of neutral
-            songNames[1] = audio.getTrackTitle()
+                audio.getSong("relaxing") #used instead of neutral
+            songNames[1] = audio.getTrackTitle() 
             # updates gui to song name
             self.songLabels[1]["text"] = songNames[1]
             songNames[4] = "Found song."
@@ -50,7 +48,7 @@ class Application(Frame):  # class for gui
         except:
             print("Couldn't play song")
 
-    def switchBool(self):  # turns on and off the webcam feed
+    def switchBool(self): # turns on and off the webcam feed
         self.updateB = not self.updateB
         if self.updateB is True:
             self.actButton["text"] = "Camera Activated"
@@ -58,28 +56,27 @@ class Application(Frame):  # class for gui
         else:
             self.actButton["text"] = "Camera Deactivated"
 
-    def updateFrame(self):  # updates gui
+    def updateFrame(self): # updates gui
         if self.updateB is True:
             self.count = 0
             for s in songNames:
                 self.songLabels[self.count]["text"] = s
                 self.count += 1
-            # self.updateCam()
+            #self.updateCam()
             self.after(self.speed, self.updateFrame)
 
-    def updateCam(self):  # updates webcam feed
-        _, frame = self.webcam.read()  # reads from webcam
+    def updateCam(self): #updates webcam feed
+        _, frame = self.webcam.read() # reads from webcam
         frame = cv2.flip(frame, 1)
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         self.img = im.fromarray(cv2image)
-        # converts to proper image format
-        imgtk = imTk.PhotoImage(image=self.img)
-        self.webcamLbl.imgtk = imgtk
-        self.webcamLbl.configure(image=imgtk)  # puts img into gui
+        imgtk = imTk.PhotoImage(image=self.img) #converts to proper image format
+        self.webcamLbl.imgtk = imgtk 
+        self.webcamLbl.configure(image=imgtk) # puts img into gui
 
     def createWidgets(self):
-        # image below is used as a placeholder, this is the only way i could get the video to
-        # show up.
+        # image below is used as a placeholder, this is the only way i could get the video to 
+        # show up. 
 
         # various numbers for formatting
         lastRow = 17
@@ -87,118 +84,64 @@ class Application(Frame):  # class for gui
         self.wid = 30
         self.wrp = 200
         pdx = 15
-        # initializes different 'widgets' in Tkinter
-        image = im.open("your-image.jpg")
-        image = image.resize((300, 300), im.BILINEAR)
+        #initializes different 'widgets' in Tkinter
+        image = im.open("your-image.jpg") 
+        image = image.resize((300,300), im.BILINEAR)
         photo = image
         imgtk = imTk.PhotoImage(image=image)
         self.webcamLbl = Label(self, image=imgtk)
-
-        self.webcamLbl.grid(row=1, column=3, columnspan=1, rowspan=lastRow - 2)
+        
+        self.webcamLbl.grid(row=1,column=3,columnspan=1, rowspan=lastRow-2)
         self.webcamLbl.image = imgtk
 
-        self.actButton = Button(self, text="Camera Activated",
-                                borderwidth=2, command=self.switchBool, width=self.wid)
+        self.actButton = Button(self, text="Camera Activated", borderwidth=2, command=self.switchBool, width=self.wid)
         self.actButton.grid(row=1, column=0, columnspan=3, sticky=W, padx=pdx)
         # Labelss containing text
-        self.songLbl = Label(self, text="Temp1", borderwidth=2,
-                             wraplength=self.wrp, padx=10, anchor=W, justify=LEFT, width=self.wid)
-        self.songLbl.grid(row=2, column=0, columnspan=3)
+        self.songLbl = Label(self, text="Temp1", borderwidth=2, wraplength=self.wrp, padx=10, anchor=W, justify=LEFT, width=self.wid)
+        self.songLbl.grid(row=2,column=0, columnspan=3)
         self.songLabels.append(self.songLbl)
-        self.songLbl = Label(self, text="Temp2", wraplength=self.wrp,
-                             padx=pdx, anchor=W, justify=LEFT, width=self.wid)
-        self.songLbl.grid(row=3, column=0, columnspan=3)
+        self.songLbl = Label(self, text="Temp2", wraplength=self.wrp, padx=pdx, anchor=W, justify=LEFT, width=self.wid)
+        self.songLbl.grid(row=3,column=0, columnspan=3)
         self.songLabels.append(self.songLbl)
-        self.songLbl = Label(self, text="Temp3", wraplength=self.wrp,
-                             padx=pdx, anchor=W, justify=LEFT, width=self.wid)
-        self.songLbl.grid(row=4, column=0, columnspan=3)
+        self.songLbl = Label(self, text="Temp3", wraplength=self.wrp, padx=pdx, anchor=W, justify=LEFT, width=self.wid)
+        self.songLbl.grid(row=4,column=0, columnspan=3)
         self.songLabels.append(self.songLbl)
-        self.songLbl = Label(self, text="Temp4", wraplength=self.wrp,
-                             padx=pdx, anchor=W, justify=LEFT, width=self.wid)
-        self.songLbl.grid(row=5, column=0, columnspan=3)
+        self.songLbl = Label(self, text="Temp4", wraplength=self.wrp, padx=pdx, anchor=W, justify=LEFT, width=self.wid)
+        self.songLbl.grid(row=5,column=0, columnspan=3)
         self.songLabels.append(self.songLbl)
-        self.songLbl = Label(self, text="Temp5", wraplength=self.wrp,
-                             padx=pdx, anchor=W, justify=LEFT, width=self.wid)
-        self.songLbl.grid(row=8, column=0, columnspan=3)
+        self.songLbl = Label(self, text="Temp5", wraplength=self.wrp, padx=pdx, anchor=W, justify=LEFT, width=self.wid)
+        self.songLbl.grid(row=8,column=0, columnspan=3)
         self.songLabels.append(self.songLbl)
         # buttons
         self.btnPlay = Button(self, text="Play Song", width=self.wid, height=4)
-        self.btnPlay.grid(row=lastRow - 8, column=0,
-                          columnspan=3, rowspan=4, padx=pdx, sticky=W)
+        self.btnPlay.grid(row=lastRow-8, column=0, columnspan=3, rowspan=4, padx=pdx, sticky=W)
         self.btnPlay["command"] = self.playSongAfter
 
-        self.btnPic = Button(self, text="Take Picture",
-                             width=self.wid, height=4)
-        self.btnPic.grid(row=lastRow - 4, column=0, columnspan=3,
-                         rowspan=4, padx=pdx, pady=10, sticky=W)
+        self.btnPic = Button(self, text="Take Picture", width=self.wid, height=4)
+        self.btnPic.grid(row=lastRow-4, column=0, columnspan=3, rowspan=4, padx=pdx, pady=10, sticky=W)
         self.btnPic["command"] = self.tryThreading
 
-        #set up for photostrip maker text
-        self.initText = "Choose 5 Images to create photostrip"
-		self.label = Label(text=self.initText)
-		self.browseBtn = Button(text = "Create Photostrip", command = self.browseFile)
-		self.browseBtn.grid(row=3,column=2, rowspan = 2, columnspan=2)
-		self.label.grid(row=1,column=1,rowspan=2,columnspan=2);
-
-
-    def takethephoto(self):  # updates gui before taking photo
+    def takethephoto(self): #updates gui before taking photo
         songNames[4] = "Analyzing Photo..."
         self.songLabels[4]["text"] = songNames[4]
-        self.after(50, self.take_photo)  # takes photo after 50 milliseconds
+        self.after(50, self.take_photo) #takes photo after 50 milliseconds
 
-     def take_photo(self):
+    def take_photo(self):
         if(self.webcam.isOpened()):
             if self.updateB is True:
-                time = time.strftime("%m_%d_%y-%H%M%S")
                 _, frame = self.webcam.read()
-                success = cv2.imwrite("captures/cap%s.jpg" % time, frame)
+                success = cv2.imwrite("cap%d.jpg"% self.count,frame) #saves photo
+                self.count += 1
                 frame = cv2.flip(frame, 1)
-                # converts colors/image
-                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+                cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA) # converts colors/image
                 self.img = im.fromarray(cv2image)
-                img_array = emotionRecognition.faceLocalization(
-                    self.img)  # analyzes photo
-                # converts photo to Tk Image
-                imgtk = imTk.PhotoImage(image=self.img)
+                img_array = emotionRecognition.faceLocalization(self.img) #analyzes photo
+                imgtk = imTk.PhotoImage(image=self.img) # converts photo to Tk Image
                 self.webcamLbl.imgtk = imgtk
                 self.photoTaken = True
-                songNames[3] = emotionRecognition.retEmotion(
-                    img_array)  # gets emotion most likely found
+                songNames[3] = emotionRecognition.retEmotion(img_array)  # gets emotion most likely found 
                 songNames[4] = "Photo has been taken."
         return imgtk
-        
-
-        # start photo_maker functions.
-    def browseFile(self):
-		browse = fd.askopenfilenames(multiple=True, title = "Choose 5 Images (use ctrl)")
-		self.fileList = root.tk.splitlist(browse)
-		# print(self.fileList)
-		self.createStrip()
-
-	def createStrip(self):
-		timestamp = time.strftime("%a_%d%b%Y_%H.%M.%S")
-		if len(self.fileList) == 5:
-			count = 0
-			newImage = im.new('RGB', (1000,2800),(255,255,255))
-			for f in self.fileList:
-				if count == 0:
-					start = (100,50)
-					count+=1
-				else:
-					ystart = 50 + (count*550)
-					start = (100,ystart)
-					count+=1
-				image = im.open(f);
-				resized = image.resize((800,500));
-				newImage.paste(resized,start)
-			newImage.save("photostrips/%s.jpg"%timestamp)
-			newImage.show()
-		else:
-			self.initText = "CHOOSE 5 IMAGES (NO MORE OR LESS)."
-			self.label.config(fg='red')
-
-
-
     def tryThreading(self):
         t = Thread(target=self.printStuff)
         t.start()
