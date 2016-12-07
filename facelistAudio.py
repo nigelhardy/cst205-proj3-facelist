@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-
-
->>>>>>> d92709ea0a7feb3e266d88b75c66793ad698c2fb
 #Author:  Brandon Avery
 #Created:  10/14/2016
 #CSUMB CST-205 Project 2
@@ -15,13 +10,8 @@ import sys
 import time
 import random 
 
-<<<<<<< HEAD
-class facelistAudio(object):
-    #audio component to FaceList project
-=======
 class facelistAudio:
-    'audio component to FaceList project'
->>>>>>> d92709ea0a7feb3e266d88b75c66793ad698c2fb
+    #'audio component to FaceList project'
 
     #class variables
     tracks = [] #array of tracks
@@ -39,19 +29,22 @@ class facelistAudio:
         count = 0
         rand = random.randint(0,19)
         #search by happy tag
-        tracksList = self.client.get('/tracks', tags=search_str,  license='cc-by-sa', limit=20, streamable='true', embedable_by='all')
-        for track in tracksList:
-            #get a random track from the list and add it to the list of tracks and list of durations
-            if count is rand:
-                # get the tracks streaming URL
-                stream_url = self.client.get(track.stream_url, allow_redirects=False)
-                #assign relevant information to the track_info associative array
-                self.track_info = {"stream_url": stream_url.location, "track_title": track.title, "track_artist": track.user, "track_artwork": track.artwork_url}
-                #add the track to the array of track_info
-                self.tracks.append(self.track_info)
-            count = count + 1
+        try:
+            tracksList = self.client.get('/tracks', tags=search_str,  license='cc-by-sa', limit=20, streamable='True', embedable_by='all')
+            for track in tracksList:
+                #get a random track from the list and add it to the list of tracks and list of durations
+                if count is rand:
+                    # get the tracks streaming URL
+                    stream_url = self.client.get(track.stream_url, allow_redirects=False)
+                    #assign relevant information to the track_info associative array
+                    self.track_info = {"stream_url": stream_url.location, "track_title": track.title, "track_artist": track.user, "track_artwork": track.artwork_url}
+                    #add the track to the array of track_info
+                    self.tracks.append(self.track_info)
+                count = count + 1
+        except:
+            return False
         if len(self.tracks) > 0:
-            return self.tracks
+            return True
 
     #get the information of the track at the index provided
     def getTrackInfo(self, index):
