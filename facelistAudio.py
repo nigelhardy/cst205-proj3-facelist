@@ -27,10 +27,11 @@ class facelistAudio:
     def getSong(self, search_str):
         self.emotion = search_str
         count = 0
-        rand = random.randint(0,19)
+        limit = 100
+        rand = random.randint(0,limit-1)
         #search by happy tag
         try:
-            tracksList = self.client.get('/tracks', tags=search_str,  license='cc-by-sa', limit=20, streamable='True', embedable_by='all')
+            tracksList = self.client.get('/tracks', tags=search_str,  license='cc-by-sa', limit=limit, streamable='True', embedable_by='all')
             for track in tracksList:
                 #get a random track from the list and add it to the list of tracks and list of durations
                 if count is rand:

@@ -152,7 +152,9 @@ class Player(Tk.Frame):
         self.webcamLbl.image = imgtk
         self.webcamLbl.pack(side=Tk.BOTTOM)
         self.videopanel.pack(fill=Tk.BOTH,expand=1)
-
+        self.videopanel.pack_propagate(False)
+        self.videopanel["width"] = 650
+        self.videopanel["height"] = 500
         ctrlpanel = ttk.Frame(self.parent)
         pause  = ttk.Button(ctrlpanel, text="Pause", command=self.OnPause)
         play   = ttk.Button(ctrlpanel, text="Play", command=self.OnPlay)
@@ -290,7 +292,7 @@ class Player(Tk.Frame):
             # neutral isn't a great keyword, so only use emotion if we didn't get neutral
             self.message["text"] = "Status: Searching SoundCloud."
             found = audio.getSong(self.emotion.lower())
-            if found == True:
+            if found == True and audio.retSizeArr() > 0:
                 tempVar = audio.getTrackInfo(audio.retSizeArr() - 1)
                 tempVar["emotion"] = self.emotion
                 tempVar = self.checkLengths(tempVar, 40)
@@ -301,7 +303,8 @@ class Player(Tk.Frame):
                 self.artistName["text"] = "Artist: " + self.songs[audio.retSizeArr()-1]["track_artist"]["username"]
                 self.emotionLabel["text"] = "Emotion: " + self.emotion
                 #self.after(60, lambda: self.showURLImage(self.songs[len(self.songs)-1]["track_artwork"]))
-                self.showURLImage(self.songs[len(self.songs)-1]["track_artwork"])
+                url = self.songs[len(self.songs)-1]["track_artwork"].replace("large","t500x500")
+                self.showURLImage(url)
                 self.message["text"] = "Status: Ready to play."
                 if(len(self.songs) > 1):
                     self.prevButton["state"] = "normal"
@@ -323,14 +326,14 @@ class Player(Tk.Frame):
             self.showImage(fileArtwork)
         except:
             self.message["text"] = "Status: Error getting song artwork."
+
     def showImage(self, fileName):
         image = im.open("artwork/" + fileName) 
-        image = image.resize((200,200), im.BILINEAR)
+        image = image.resize((500,500), im.BILINEAR)
         photo = image
         imgtk = imTk.PhotoImage(image=image)
         self.webcamLbl.imgtk = imgtk 
         self.webcamLbl.configure(image=imgtk) # puts img into gui
-        self.webcamLbl["width"] = 2000
     def activateWebcam(self):
         self.updateB = not self.updateB
         if self.updateB == True:
