@@ -1,29 +1,14 @@
 #! /usr/bin/python
 # -*- coding: utf-8 -*-
-
 #
-# tkinter example for VLC Python bindings
-# Copyright (C) 2015 the VideoLAN team
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
-#
-"""A simple example for VLC python bindings using tkinter. Uses python 3.4
-
-Author: Patrick Fay
-Date: 23-09-2015
+"""Special thanks to Patrick Fay
+Parts of his program are used and made available via GNU Public License v2
 """
+#Author:  Nigel Hardy (and Brandon and Ryan)
+#Created:  11/20/2016
+#CSUMB CST-205 Project 3
+#Team 24
+#GitHub:  https://github.com/nigelhardy/cst205-proj3-facelist
 
 # import external libraries
 import vlc
@@ -114,7 +99,7 @@ class Player(Tk.Frame):
         self.parent = parent
         self.emotion = ""
         self.shutter = 0
-
+        self.curated = True
         if title == None:
             title = "tk_vlc"
         self.parent.title(title)
@@ -126,7 +111,7 @@ class Player(Tk.Frame):
         self.artistName = ttk.Label(self.topPanel, text="Artist: N/A")
         self.emotionLabel = ttk.Label(self.topPanel, text="Emotion: N/A")
         self.webCamButton = ttk.Button(self.topPanelR, text="Webcam Active", command=self.activateWebcam, width=15)
-
+        
         self.shutter = ttk.Button(self.topPanelR, text="Take Photo", command=self.takethephoto, width=15)
         photostripButton = ttk.Button(self.topPanelR, text="Photostrip", command=self.browseFile, width=15)
 
@@ -143,8 +128,7 @@ class Player(Tk.Frame):
         # The second panel holds controls
         self.player = None
         self.videopanel = ttk.Frame(self.parent)
-        image = im.open("your-image.jpg") 
-        image = image.resize((400,400), im.BILINEAR)
+        image = im.open("artwork/default.jpg") 
         photo = image
         imgtk = imTk.PhotoImage(image=image)
         
@@ -177,7 +161,8 @@ class Player(Tk.Frame):
         self.volslider = Tk.Scale(ctrlpanel, variable=self.volume_var, command=self.volume_sel,
                 from_=0, to=100, orient=Tk.HORIZONTAL, length=100)
         self.volslider.pack(side=Tk.LEFT)
-        
+        self.volume_var.set(50)
+
         ctrlpanel.pack(side=Tk.BOTTOM)
 
 
@@ -193,13 +178,17 @@ class Player(Tk.Frame):
         ctrlpanel2.pack(side=Tk.BOTTOM,fill=Tk.X)
 
         ctrlpanel3 = ttk.Frame(self.parent)
+        self.curated = Tk.IntVar()
+        self.curateCheck = ttk.Checkbutton(ctrlpanel3, text="Curate", variable=self.curated)
+        self.curated.set(1)
+        self.curateCheck.pack(side=Tk.RIGHT)
         self.message = ttk.Label(ctrlpanel3, text="Status: Ready to take photo.")
         self.message.pack(side=Tk.LEFT)
         self.share = ttk.Button(ctrlpanel3, text="Share", command=self.share)
         self.share.pack(side=Tk.RIGHT)
-        self.inputText = ttk.Entry(ctrlpanel3)
+        self.inputText = ttk.Entry(ctrlpanel3, width=15)
         self.inputText.pack(side=Tk.RIGHT)
-        self.instruction = ttk.Label(ctrlpanel3, text="Enter your name: ")
+        self.instruction = ttk.Label(ctrlpanel3, text="Your name: ")
         self.instruction.pack(side=Tk.RIGHT)
         
         ctrlpanel3.pack(fill=Tk.BOTH, side=Tk.TOP)
@@ -207,7 +196,7 @@ class Player(Tk.Frame):
         # VLC player controls
         self.Instance = vlc.Instance()
         self.player = self.Instance.media_player_new()
-
+        #self.player.audio_set_volume(100)
         self.timer = ttkTimer(self.OnTimer, 1.0)
         self.timer.start()
         self.parent.update()
@@ -291,7 +280,13 @@ class Player(Tk.Frame):
             audio = flAudio.facelistAudio() # init soundcloud library
             # neutral isn't a great keyword, so only use emotion if we didn't get neutral
             self.message["text"] = "Status: Searching SoundCloud."
-            found = audio.getSong(self.emotion.lower())
+            found = False
+            if(self.curated.get() == 1):
+                playlistUrl = audio.emotionToPlaylistURL(self.emotion.lower())
+                found = audio.getPlaylist(playlistUrl)
+            else:
+                found = audio.getSong(self.emotion.lower())
+            
             if found == True and audio.retSizeArr() > 0:
                 tempVar = audio.getTrackInfo(audio.retSizeArr() - 1)
                 tempVar["emotion"] = self.emotion
@@ -313,6 +308,7 @@ class Player(Tk.Frame):
                 self.message["text"] = "Status: No song found."
         except:
             self.message["text"] = "Status: Couldn't find song."
+            self.showImage("default.jpg")
 
     def updateFrame(self): # updates gui
         if self.updateB is True:
@@ -328,12 +324,16 @@ class Player(Tk.Frame):
             self.message["text"] = "Status: Error getting song artwork."
 
     def showImage(self, fileName):
-        image = im.open("artwork/" + fileName) 
-        image = image.resize((500,500), im.BILINEAR)
-        photo = image
-        imgtk = imTk.PhotoImage(image=image)
-        self.webcamLbl.imgtk = imgtk 
-        self.webcamLbl.configure(image=imgtk) # puts img into gui
+        try:
+            image = im.open("artwork/" + fileName) 
+            image = image.resize((500,500), im.BILINEAR)
+            photo = image
+            imgtk = imTk.PhotoImage(image=image)
+            self.webcamLbl.imgtk = imgtk 
+            self.webcamLbl.configure(image=imgtk) # puts img into gui
+        except:
+            self.message["text"] = "Image not found."
+
     def activateWebcam(self):
         self.updateB = not self.updateB
         if self.updateB == True:
@@ -342,6 +342,7 @@ class Player(Tk.Frame):
             self.after(100, self.updateFrame)
         else:
             self.webCamButton["text"] = "Webcam Idle"
+            self.showImage("default.jpg")
             self.shutter["state"] = "disabled"
         
         
@@ -380,7 +381,8 @@ class Player(Tk.Frame):
 
         # set the volume slider to the current volume
         #self.volslider.SetValue(self.player.audio_get_volume() / 2)
-        self.volslider.set(self.player.audio_get_volume())
+        #self.player.audio_set_volume(self.volume_var.get())
+        #self.volslider.set(self.player.audio_get_volume())
 
     def OnPlay(self):
         """Toggle the status to Play/Pause.
@@ -388,15 +390,19 @@ class Player(Tk.Frame):
         """
         # check if there is a file to play, otherwise open a
         # Tk.FileDialog to select a file
-        if not self.player.get_media():
-            self.OnOpen()
-        else:
-            if self.lastURL != self.songURL:
+        if(len(self.songs) > 0):
+
+            if not self.player.get_media():
                 self.OnOpen()
             else:
-                # Try to launch the media, if this fails display an error message
-                if self.player.play() == -1:
-                    self.errorDialog("Unable to play.")
+                if self.lastURL != self.songURL:
+                    self.OnOpen()
+                else:
+                    # Try to launch the media, if this fails display an error message
+                    if self.player.play() == -1:
+                        self.errorDialog("Unable to play.")
+        else:
+            self.message["text"] = "Status: No song yet."
 
     def checkLengths(self, songInfo, lengthStr):
         if len(songInfo["track_title"]) > lengthStr:
@@ -537,7 +543,8 @@ class Player(Tk.Frame):
     def errorDialog(self, errormessage):
         """Display a simple error dialog.
         """
-        Tk.tkMessageBox.showerror(self, 'Error', errormessage)
+        #Tk.tkMessageBox.showerror(self, 'Error', errormessage)
+        doNothing = 0
 
 def Tk_get_root():
     if not hasattr(Tk_get_root, "root"): #(1)

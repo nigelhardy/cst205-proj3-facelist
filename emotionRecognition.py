@@ -30,23 +30,15 @@ def faceLocalization(img):
 #gets probability of emotion from indico api
 #sorts dictionary by value and returns string of highest probability emotion
 def retEmotion(data):
-	happySyns = ["joyful","happy","upbeat","content","beaming","glad","delighted","ecstatic","thrilled","joy","lively","pleased"]
-	sadSyns = ["sad","bitter","down","somber","sorry","meloncholy","heartbroken","pessimistic","mournful","gloomy","grief","troubled","crying"]
-	angrySyns = ["enraged","furious","heated","irritable","indignant","outraged","offended","fiery","riled","angry","wrath","rage"]
-	fearSyns = ["fear","terror","worry","horror","dread","panic","scared","uneasy","timid","fright","stress","phobia"]
-	surpiseSyns = ["amazement","amazing","awe","jolt","shock","wonder","awed","bewildered","bewilder","revalation","unexpected","astounding"]
-	emotionSyns = {}
-	emotionSyns["happySyns"] = happySyns
-	emotionSyns["sadSyns"] = sadSyns
-	emotionSyns["angrySyns"] = angrySyns
-	emotionSyns["fearSyns"] = fearSyns
-	emotionSyns["surpriseSyns"] = surpiseSyns
+	
 	emoDict = ind.fer(data)
 	sortedDict = sorted(emoDict.items(), key = operator.itemgetter(1))
 	mostLikely = sortedDict[5][0]
-	secondLikely = sortedDict[4][0]
 	if mostLikely == "Neutral":
-		mostLikely = "chill"
+		return "Calm"
+	secondLikely = sortedDict[4][0]
+	#if mostLikely == "Neutral":
+	#	mostLikely = "chill"
 	"""if mostLikely == "Neutral":
 					mostLikely = sortedDict[4][0]
 					secondLikely = sortedDict[3][0]
